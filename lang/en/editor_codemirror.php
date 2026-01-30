@@ -27,3 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Codemirror';
 $string['privacy:metadata'] = 'The Codemirror plugin doesn\'t store any personal data.';
+$string['preview'] = 'Preview';
+$string['code'] = 'Code';
+$string['togglepreview'] = 'Toggle preview';
+$string['htmlpreview'] = 'HTML Preview';
