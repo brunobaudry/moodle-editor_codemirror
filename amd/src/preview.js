@@ -19,7 +19,8 @@
  *
  */
 
-import {get_string as getString} from 'core/str';
+import {get_strings as getStrings} from 'core/str';
+import Ajax from 'core/ajax';
 
 /**
  * Creates and manages preview toggle functionality for the editor.
@@ -31,6 +32,7 @@ import {get_string as getString} from 'core/str';
 export const initPreview = (editorInstance, targetElement) => {
     const state = {
         isPreview: false,
+        applyFilters: true,
         elements: {},
         strings: {}
     };
@@ -70,6 +72,32 @@ export const initPreview = (editorInstance, targetElement) => {
     };
 
     /**
+     * Creates the filter checkbox.
+     * @returns {HTMLElement}
+     */
+    const createFilterCheckbox = () => {
+        const wrapper = document.createElement('label');
+        wrapper.style.marginLeft = '10px';
+        wrapper.style.display = 'inline-flex';
+        wrapper.style.alignItems = 'center';
+        wrapper.style.cursor = 'pointer';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = state.applyFilters;
+        checkbox.classList.add('editor_codemirror/filter-checkbox');
+        checkbox.style.marginRight = '5px';
+
+        const label = document.createElement('span');
+        label.textContent = state.strings.applyfilters || 'Apply filters';
+
+        wrapper.appendChild(checkbox);
+        wrapper.appendChild(label);
+
+        return wrapper;
+    };
+
+    /**
      * Updates button icon with fallback for different Moodle versions.
      * Supports both Font Awesome 4.x (Moodle LTS) and 6.x (Moodle 4.0+)
      *
@@ -102,7 +130,7 @@ export const initPreview = (editorInstance, targetElement) => {
     /**
      * Toggles between code and preview mode.
      */
-    const togglePreview = () => {
+    const togglePreview = async() => {
         const {previewContainer, toggleButton, editorElement} = state.elements;
 
         state.isPreview = !state.isPreview;
@@ -112,10 +140,33 @@ export const initPreview = (editorInstance, targetElement) => {
             previewContainer.style.display = 'block';
             editorElement.hidden = true;
 
-            // Get content from editor and render as HTML
+            // Get content from editor
             const content = editorInstance.getValue();
-            // Sanitize and render content safely
-            previewContainer.innerHTML = content;
+
+            // Check if filters should be applied
+            if (state.applyFilters) {
+                // Apply filters through Moodle's format_text function
+                try {
+                    const result = await Ajax.call([{
+                        methodname: 'editor_codemirror_format_text',
+                        args: {
+                            text: content,
+                            contextid: M.cfg.contextid || 1,
+                            format: 1 // FORMAT_HTML
+                        }
+                    }])[0];
+
+                    previewContainer.innerHTML = result.text;
+                } catch (error) {
+                    // Fallback to unfiltered content if web service fails
+                    // eslint-disable-next-line no-console
+                    console.warn('Failed to apply filters, displaying unfiltered content:', error);
+                    previewContainer.innerHTML = content;
+                }
+            } else {
+                // Display unfiltered content
+                previewContainer.innerHTML = content;
+            }
 
             updateButtonIcon(toggleButton, true);
             toggleButton.setAttribute('aria-pressed', 'true');
@@ -134,21 +185,21 @@ export const initPreview = (editorInstance, targetElement) => {
      */
     const initialize = async() => {
         // Load language strings
-        const strings = await getString('get_strings', {
-            stringkeys: [
-                {key: 'preview', component: 'editor_codemirror'},
-                {key: 'code', component: 'editor_codemirror'},
-                {key: 'togglepreview', component: 'editor_codemirror'},
-                {key: 'htmlpreview', component: 'editor_codemirror'}
-            ]
-        });
+        const strings = await getStrings([
+            {key: 'preview', component: 'editor_codemirror'},
+            {key: 'code', component: 'editor_codemirror'},
+            {key: 'togglepreview', component: 'editor_codemirror'},
+            {key: 'htmlpreview', component: 'editor_codemirror'},
+            {key: 'applyfilters', component: 'editor_codemirror'}
+        ]);
 
         // Store strings in state
         state.strings = {
             preview: strings[0],
             code: strings[1],
             togglepreview: strings[2],
-            htmlpreview: strings[3]
+            htmlpreview: strings[3],
+            applyfilters: strings[4]
         };
 
         const editorElement = document.querySelector('.cm-editor');
@@ -162,31 +213,47 @@ export const initPreview = (editorInstance, targetElement) => {
         // Create UI elements
         const previewContainer = createPreviewContainer();
         const toggleButton = createToggleButton();
+        const filterCheckbox = createFilterCheckbox();
 
         // Store references
         state.elements = {
             editorElement,
             previewContainer,
-            toggleButton
+            toggleButton,
+            filterCheckbox
         };
 
-        // Add event listener
+        // Add event listeners
         toggleButton.addEventListener('click', togglePreview);
+
+        const checkbox = filterCheckbox.querySelector('input[type="checkbox"]');
+        checkbox.addEventListener('change', (e) => {
+            state.applyFilters = e.target.checked;
+            // If preview is currently shown, refresh it
+            if (state.isPreview) {
+                togglePreview().then(() => togglePreview());
+            }
+        });
 
         // Append to DOM
         targetElement.parentNode.appendChild(previewContainer);
         targetElement.parentNode.appendChild(toggleButton);
+        targetElement.parentNode.appendChild(filterCheckbox);
     };
 
     /**
      * Destroys the preview functionality and cleans up.
      */
     const destroy = () => {
-        const {previewContainer, toggleButton} = state.elements;
+        const {previewContainer, toggleButton, filterCheckbox} = state.elements;
 
         if (toggleButton) {
             toggleButton.removeEventListener('click', togglePreview);
             toggleButton.remove();
+        }
+
+        if (filterCheckbox) {
+            filterCheckbox.remove();
         }
 
         if (previewContainer) {
