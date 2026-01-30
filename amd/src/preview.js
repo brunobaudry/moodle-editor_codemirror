@@ -76,7 +76,9 @@ export const initPreview = (editorInstance, targetElement) => {
      * @returns {HTMLElement}
      */
     const createFilterCheckbox = () => {
-        const wrapper = document.createElement('label');
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('form-check');
+        wrapper.classList.add('form-switch');
         wrapper.style.marginLeft = '10px';
         wrapper.style.display = 'inline-flex';
         wrapper.style.alignItems = 'center';
@@ -85,11 +87,14 @@ export const initPreview = (editorInstance, targetElement) => {
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = state.applyFilters;
-        checkbox.classList.add('editor_codemirror/filter-checkbox');
+        checkbox.setAttribute('id','editor_codemirror/filter-checkbox');
+        checkbox.classList.add('form-check-input');
         checkbox.style.marginRight = '5px';
 
-        const label = document.createElement('span');
+        const label = document.createElement('label');
         label.textContent = state.strings.applyfilters || 'Apply filters';
+        label.classList.add('form-check-label');
+        label.setAttribute('for',  'editor_codemirror/filter-checkbox');
 
         wrapper.appendChild(checkbox);
         wrapper.appendChild(label);
