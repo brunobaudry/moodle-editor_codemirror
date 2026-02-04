@@ -56,10 +56,9 @@ export const initPreview = (editorInstance, targetElement) => {
 
     /**
      * Creates the toggle button with fallback icon support.
-     * @param {HTMLElement} wrapper
      * @returns {HTMLElement}
      */
-    const createToggleButton = (wrapper) => {
+    const createToggleButton = () => {
         const button = document.createElement('button');
         button.type = 'button';
         button.classList.add('btn', 'btn-secondary', 'editor_codemirror/preview-toggle');
@@ -68,14 +67,15 @@ export const initPreview = (editorInstance, targetElement) => {
 
         // Set initial icon (eye for "view preview" state)
         updateButtonIcon(button, false);
-        wrapper.appendChild(button);
+
         return button;
     };
+
     /**
-     *
-     * @return {HTMLElement}
+     * Creates the filter checkbox.
+     * @returns {HTMLElement}
      */
-    const createWrapper = () => {
+    const createFilterCheckbox = () => {
         const wrapper = document.createElement('div');
         wrapper.classList.add('form-check');
         wrapper.classList.add('form-switch');
@@ -83,21 +83,6 @@ export const initPreview = (editorInstance, targetElement) => {
         wrapper.style.display = 'none';
         wrapper.style.alignItems = 'center';
         wrapper.style.cursor = 'pointer';
-        return wrapper;
-    };
-        /**
-         * Creates the filter checkbox.
-         * @param {HTMLElement} wrapper
-         * @returns {HTMLElement}
-         */
-    const createFilterCheckbox = (wrapper) => {
-        // const wrapper = document.createElement('div');
-        // wrapper.classList.add('form-check');
-        // wrapper.classList.add('form-switch');
-        // wrapper.style.marginLeft = '10px';
-        // wrapper.style.display = 'none';
-        // wrapper.style.alignItems = 'center';
-        // wrapper.style.cursor = 'pointer';
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
@@ -234,16 +219,24 @@ export const initPreview = (editorInstance, targetElement) => {
 
         // Create UI elements
         const previewContainer = createPreviewContainer();
-        const wrapper = createWrapper();
-        const toggleButton = createToggleButton(wrapper);
-        const filterCheckbox = createFilterCheckbox(wrapper);
+        const toggleButton = createToggleButton();
+        const filterCheckbox = createFilterCheckbox();
+
+        // Create controls container
+        const controlsContainer = document.createElement('div');
+        controlsContainer.classList.add('editor_codemirror/preview-controls');
+        controlsContainer.style.display = 'flex';
+        controlsContainer.style.alignItems = 'center';
+        controlsContainer.style.marginBottom = '10px';
+        controlsContainer.style.paddingTop = '10px';
 
         // Store references
         state.elements = {
             editorElement,
             previewContainer,
             toggleButton,
-            filterCheckbox
+            filterCheckbox,
+            controlsContainer
         };
 
         // Add event listeners
@@ -258,25 +251,27 @@ export const initPreview = (editorInstance, targetElement) => {
             }
         });
 
+        // Append buttons to controls container
+        controlsContainer.appendChild(toggleButton);
+        controlsContainer.appendChild(filterCheckbox);
+
         // Append to DOM
         targetElement.parentNode.appendChild(previewContainer);
-        targetElement.parentNode.appendChild(toggleButton);
-        targetElement.parentNode.appendChild(filterCheckbox);
+        targetElement.parentNode.appendChild(controlsContainer);
     };
 
     /**
      * Destroys the preview functionality and cleans up.
      */
     const destroy = () => {
-        const {previewContainer, toggleButton, filterCheckbox} = state.elements;
+        const {previewContainer, toggleButton, controlsContainer} = state.elements;
 
         if (toggleButton) {
             toggleButton.removeEventListener('click', togglePreview);
-            toggleButton.remove();
         }
 
-        if (filterCheckbox) {
-            filterCheckbox.remove();
+        if (controlsContainer) {
+            controlsContainer.remove();
         }
 
         if (previewContainer) {
