@@ -56,9 +56,10 @@ export const initPreview = (editorInstance, targetElement) => {
 
     /**
      * Creates the toggle button with fallback icon support.
+     * @param {HTMLElement} wrapper
      * @returns {HTMLElement}
      */
-    const createToggleButton = () => {
+    const createToggleButton = (wrapper) => {
         const button = document.createElement('button');
         button.type = 'button';
         button.classList.add('btn', 'btn-secondary', 'editor_codemirror/preview-toggle');
@@ -67,15 +68,14 @@ export const initPreview = (editorInstance, targetElement) => {
 
         // Set initial icon (eye for "view preview" state)
         updateButtonIcon(button, false);
-
+        wrapper.appendChild(button);
         return button;
     };
-
     /**
-     * Creates the filter checkbox.
-     * @returns {HTMLElement}
+     *
+     * @return {HTMLElement}
      */
-    const createFilterCheckbox = () => {
+    const createWrapper = () => {
         const wrapper = document.createElement('div');
         wrapper.classList.add('form-check');
         wrapper.classList.add('form-switch');
@@ -83,6 +83,21 @@ export const initPreview = (editorInstance, targetElement) => {
         wrapper.style.display = 'none';
         wrapper.style.alignItems = 'center';
         wrapper.style.cursor = 'pointer';
+        return wrapper;
+    };
+        /**
+         * Creates the filter checkbox.
+         * @param {HTMLElement} wrapper
+         * @returns {HTMLElement}
+         */
+    const createFilterCheckbox = (wrapper) => {
+        // const wrapper = document.createElement('div');
+        // wrapper.classList.add('form-check');
+        // wrapper.classList.add('form-switch');
+        // wrapper.style.marginLeft = '10px';
+        // wrapper.style.display = 'none';
+        // wrapper.style.alignItems = 'center';
+        // wrapper.style.cursor = 'pointer';
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
@@ -219,8 +234,9 @@ export const initPreview = (editorInstance, targetElement) => {
 
         // Create UI elements
         const previewContainer = createPreviewContainer();
-        const toggleButton = createToggleButton();
-        const filterCheckbox = createFilterCheckbox();
+        const wrapper = createWrapper();
+        const toggleButton = createToggleButton(wrapper);
+        const filterCheckbox = createFilterCheckbox(wrapper);
 
         // Store references
         state.elements = {
