@@ -80,7 +80,7 @@ export const initPreview = (editorInstance, targetElement) => {
         wrapper.classList.add('form-check');
         wrapper.classList.add('form-switch');
         wrapper.style.marginLeft = '10px';
-        wrapper.style.display = 'inline-flex';
+        wrapper.style.display = 'none';
         wrapper.style.alignItems = 'center';
         wrapper.style.cursor = 'pointer';
 
@@ -136,7 +136,7 @@ export const initPreview = (editorInstance, targetElement) => {
      * Toggles between code and preview mode.
      */
     const togglePreview = async() => {
-        const {previewContainer, toggleButton, editorElement} = state.elements;
+        const {previewContainer, toggleButton, editorElement, filterCheckbox} = state.elements;
 
         state.isPreview = !state.isPreview;
 
@@ -144,6 +144,7 @@ export const initPreview = (editorInstance, targetElement) => {
             // Switch to preview mode
             previewContainer.style.display = 'block';
             editorElement.hidden = true;
+            filterCheckbox.style.display = 'inline-flex';
 
             // Get content from editor
             const content = editorInstance.getValue();
@@ -179,6 +180,7 @@ export const initPreview = (editorInstance, targetElement) => {
             // Switch to code mode
             previewContainer.style.display = 'none';
             editorElement.hidden = false;
+            filterCheckbox.style.display = 'none';
 
             updateButtonIcon(toggleButton, false);
             toggleButton.setAttribute('aria-pressed', 'false');
