@@ -15,8 +15,7 @@
 
 /**
  * @module     editor_codemirror/codemirror
- * @file       amd/src/review.js
- *
+ * @file       amd/src/preview.js
  */
 
 import {get_strings as getStrings} from 'core/str';
@@ -50,7 +49,7 @@ export const initPreview = (editorInstance, targetElement) => {
         container.style.minHeight = '200px';
         container.style.backgroundColor = '#fff';
         container.setAttribute('role', 'region');
-        container.setAttribute('aria-label', state.strings.htmlpreview || 'HTML Preview');
+        container.setAttribute('aria-label', state.strings.htmlpreview);
         return container;
     };
 
@@ -62,8 +61,8 @@ export const initPreview = (editorInstance, targetElement) => {
         const button = document.createElement('button');
         button.type = 'button';
         button.classList.add('btn', 'btn-secondary', 'editor_codemirror/preview-toggle');
-        button.setAttribute('aria-label', state.strings.togglepreview || 'Toggle preview');
-        button.setAttribute('title', state.strings.togglepreview || 'Toggle preview');
+        button.setAttribute('aria-label', state.strings.togglepreview);
+        button.setAttribute('title', state.strings.togglepreview);
 
         // Set initial icon (eye for "view preview" state)
         updateButtonIcon(button, false);
@@ -87,14 +86,14 @@ export const initPreview = (editorInstance, targetElement) => {
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = state.applyFilters;
-        checkbox.setAttribute('id','editor_codemirror/filter-checkbox');
+        checkbox.setAttribute('id', 'editor_codemirror/filter-checkbox');
         checkbox.classList.add('form-check-input');
         checkbox.style.marginRight = '5px';
 
         const label = document.createElement('label');
-        label.textContent = state.strings.applyfilters || 'Apply filters';
+        label.textContent = state.strings.applyfilters;
         label.classList.add('form-check-label');
-        label.setAttribute('for',  'editor_codemirror/filter-checkbox');
+        label.setAttribute('for', 'editor_codemirror/filter-checkbox');
 
         wrapper.appendChild(checkbox);
         wrapper.appendChild(label);
@@ -110,25 +109,23 @@ export const initPreview = (editorInstance, targetElement) => {
      * @param {boolean} isPreviewMode - Whether preview is currently active
      */
     const updateButtonIcon = (button, isPreviewMode) => {
-        // Clear existing content
+        // Clear existing content.
         button.innerHTML = '';
 
         const icon = document.createElement('i');
 
         if (isPreviewMode) {
             // Show code icon when in preview mode (to switch back to code).
-            // FA6: fa-solid fa-code, FA4: fa fa-code.
             icon.className = 'fa fa-code';
             icon.setAttribute('aria-hidden', 'true');
             button.appendChild(icon);
-            button.appendChild(document.createTextNode(' ' + (state.strings.code || 'Code')));
+            button.appendChild(document.createTextNode(state.strings.code));
         } else {
-            // Show eye icon when in code mode (to switch to preview).
-            // FA6: fa-solid fa-eye, FA4: fa fa-eye.
+            // Switch to preview.
             icon.className = 'fa fa-eye';
             icon.setAttribute('aria-hidden', 'true');
             button.appendChild(icon);
-            button.appendChild(document.createTextNode(' ' + (state.strings.preview || 'Preview')));
+            button.appendChild(document.createTextNode(state.strings.preview));
         }
     };
 
@@ -141,43 +138,40 @@ export const initPreview = (editorInstance, targetElement) => {
         state.isPreview = !state.isPreview;
 
         if (state.isPreview) {
-            // Switch to preview mode
+            // Switch to preview mode.
             previewContainer.style.display = 'block';
             editorElement.hidden = true;
             filterCheckbox.style.display = 'inline-flex';
 
-            // Get content from editor
+            // Get content from editor.
             const content = editorInstance.getValue();
 
-            // Check if filters should be applied
+            // Check if filters should be applied.
             if (state.applyFilters) {
-                // Apply filters through Moodle's format_text function
+                // Apply filters through Moodle's format_text function.
                 try {
                     const result = await Ajax.call([{
                         methodname: 'editor_codemirror_format_text',
                         args: {
                             text: content,
                             contextid: M.cfg.contextid || 1,
-                            format: 1 // FORMAT_HTML
+                            format: 1 // FORMAT_HTML.
                         }
                     }])[0];
-
                     previewContainer.innerHTML = result.text;
                 } catch (error) {
-                    // Fallback to unfiltered content if web service fails
-                    // eslint-disable-next-line no-console
-                    console.warn('Failed to apply filters, displaying unfiltered content:', error);
+                    // Fallback to unfiltered content if web service fails.
                     previewContainer.innerHTML = content;
                 }
             } else {
-                // Display unfiltered content
+                // Display unfiltered content.
                 previewContainer.innerHTML = content;
             }
 
             updateButtonIcon(toggleButton, true);
             toggleButton.setAttribute('aria-pressed', 'true');
         } else {
-            // Switch to code mode
+            // Switch to code mode.
             previewContainer.style.display = 'none';
             editorElement.hidden = false;
             filterCheckbox.style.display = 'none';
@@ -191,7 +185,7 @@ export const initPreview = (editorInstance, targetElement) => {
      * Initializes the preview functionality.
      */
     const initialize = async() => {
-        // Load language strings
+        // Load language strings.
         const strings = await getStrings([
             {key: 'preview', component: 'editor_codemirror'},
             {key: 'code', component: 'editor_codemirror'},
@@ -200,7 +194,7 @@ export const initPreview = (editorInstance, targetElement) => {
             {key: 'applyfilters', component: 'editor_codemirror'}
         ]);
 
-        // Store strings in state
+        // Store strings in state.
         state.strings = {
             preview: strings[0],
             code: strings[1],
@@ -217,12 +211,12 @@ export const initPreview = (editorInstance, targetElement) => {
             return;
         }
 
-        // Create UI elements
+        // Create UI elements.
         const previewContainer = createPreviewContainer();
         const toggleButton = createToggleButton();
         const filterCheckbox = createFilterCheckbox();
 
-        // Create controls container
+        // Create controls container.
         const controlsContainer = document.createElement('div');
         controlsContainer.classList.add('editor_codemirror/preview-controls');
         controlsContainer.style.display = 'flex';
@@ -230,7 +224,7 @@ export const initPreview = (editorInstance, targetElement) => {
         controlsContainer.style.marginBottom = '10px';
         controlsContainer.style.paddingTop = '10px';
 
-        // Store references
+        // Store references.
         state.elements = {
             editorElement,
             previewContainer,
@@ -238,24 +232,20 @@ export const initPreview = (editorInstance, targetElement) => {
             filterCheckbox,
             controlsContainer
         };
-
-        // Add event listeners
         toggleButton.addEventListener('click', togglePreview);
 
         const checkbox = filterCheckbox.querySelector('input[type="checkbox"]');
         checkbox.addEventListener('change', (e) => {
             state.applyFilters = e.target.checked;
-            // If preview is currently shown, refresh it
+            // If preview is currently shown, refresh it.
             if (state.isPreview) {
                 togglePreview().then(() => togglePreview());
             }
         });
 
-        // Append buttons to controls container
+        // Append buttons to controls container then to DOM.
         controlsContainer.appendChild(toggleButton);
         controlsContainer.appendChild(filterCheckbox);
-
-        // Append to DOM
         targetElement.parentNode.appendChild(previewContainer);
         targetElement.parentNode.appendChild(controlsContainer);
     };

@@ -31,4 +31,4 @@ $string['preview'] = 'Preview';
 $string['code'] = 'Code';
 $string['togglepreview'] = 'Toggle preview';
 $string['htmlpreview'] = 'HTML Preview';
-$string['applyfilters'] = 'Apply filters';
+$string['applyfilters'] = 'Apply text filters';
